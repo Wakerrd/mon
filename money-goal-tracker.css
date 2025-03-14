@@ -648,3 +648,47 @@ textarea {
 .achievement-progress-bar {
     display: none;
 }
+
+/* 坚果云同步相关样式 */
+.connection-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+}
+
+.connection-status.success {
+    display: block;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+}
+
+.connection-status.error {
+    display: block;
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+}
+
+.connection-status.loading {
+    display: block;
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    border: 1px solid #faebcc;
+}
+
+.help-text {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 4px;
+}
+
+.help-text a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.help-text a:hover {
+    text-decoration: underline;
+}

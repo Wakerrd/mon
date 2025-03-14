@@ -382,6 +382,10 @@ class UIController {
         this.downloadDataBtn.addEventListener('click', () => this.downloadFromNutstore());
         this.clearConfigBtn.addEventListener('click', () => this.clearNutstoreConfig());
         
+        // 连接模式单选按钮事件
+        document.getElementById('direct-mode').addEventListener('change', () => this.toggleProxySettings());
+        document.getElementById('proxy-mode').addEventListener('change', () => this.toggleProxySettings());
+        
         // 点击模态窗口外部关闭
         window.addEventListener('click', (e) => {
             if (e.target === this.nutstoreModal) {
@@ -903,6 +907,17 @@ class UIController {
             this.nutstorePassword.value = this.nutstoreSync.appPassword;
             this.nutstorePath.value = this.nutstoreSync.path;
             this.nutstoreFilename.value = this.nutstoreSync.syncFilename;
+            
+            // 设置连接模式单选按钮
+            document.getElementById('direct-mode').checked = !this.nutstoreSync.useProxy;
+            document.getElementById('proxy-mode').checked = this.nutstoreSync.useProxy;
+            
+            // 设置代理URL
+            document.getElementById('proxy-url').value = this.nutstoreSync.proxyUrl;
+            
+            // 根据是否使用代理显示代理设置
+            this.toggleProxySettings();
+            
             this.syncActions.style.display = 'block';
         } else {
             this.syncActions.style.display = 'none';
@@ -919,6 +934,14 @@ class UIController {
         this.nutstoreModal.style.display = 'none';
     }
 
+    // 根据连接模式切换代理设置的显示
+    toggleProxySettings() {
+        const proxySettings = document.getElementById('proxy-settings');
+        const useProxy = document.getElementById('proxy-mode').checked;
+        
+        proxySettings.style.display = useProxy ? 'block' : 'none';
+    }
+
     // 测试坚果云连接
     async testNutstoreConnection() {
         // 获取表单数据
@@ -926,14 +949,29 @@ class UIController {
         const password = this.nutstorePassword.value.trim();
         const path = this.nutstorePath.value.trim();
         const filename = this.nutstoreFilename.value.trim() || 'money-goal-tracker-data.json';
+        const useProxy = document.getElementById('proxy-mode').checked;
+        const proxyUrl = document.getElementById('proxy-url').value.trim();
         
         if (!username || !password) {
             this.showConnectionStatus('error', '请填写坚果云账户邮箱和应用密码');
             return;
         }
         
+        if (useProxy && !proxyUrl) {
+            this.showConnectionStatus('error', '使用代理模式时必须填写代理服务URL');
+            return;
+        }
+        
+        // 临时设置代理URL
+        if (useProxy && proxyUrl) {
+            this.nutstoreSync.setProxyUrl(proxyUrl);
+        }
+        
+        // 设置是否使用代理
+        this.nutstoreSync.setUseProxy(useProxy);
+        
         // 临时配置用于测试
-        this.nutstoreSync.saveConfig(username, password, path, filename);
+        this.nutstoreSync.saveConfig(username, password, path, filename, useProxy);
         
         this.showConnectionStatus('loading', '正在测试连接...');
         
@@ -964,16 +1002,28 @@ class UIController {
         const password = this.nutstorePassword.value.trim();
         const path = this.nutstorePath.value.trim();
         const filename = this.nutstoreFilename.value.trim() || 'money-goal-tracker-data.json';
+        const useProxy = document.getElementById('proxy-mode').checked;
+        const proxyUrl = document.getElementById('proxy-url').value.trim();
         
         if (!username || !password) {
             this.showConnectionStatus('error', '请填写坚果云账户邮箱和应用密码');
             return;
         }
         
+        if (useProxy && !proxyUrl) {
+            this.showConnectionStatus('error', '使用代理模式时必须填写代理服务URL');
+            return;
+        }
+        
         this.showConnectionStatus('loading', '正在保存配置...');
         
+        // 如果使用代理，设置代理URL
+        if (useProxy && proxyUrl) {
+            this.nutstoreSync.setProxyUrl(proxyUrl);
+        }
+        
         // 保存配置
-        this.nutstoreSync.saveConfig(username, password, path, filename);
+        this.nutstoreSync.saveConfig(username, password, path, filename, useProxy);
         
         try {
             await this.nutstoreSync.testConnection();

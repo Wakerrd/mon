@@ -7,7 +7,7 @@ class NutstoreSync {
         // 原始坚果云WebDAV URL
         this.originalWebdavUrl = 'https://dav.jianguoyun.com/dav/';
         // Cloudflare Worker代理URL - 需要修改为您自己的Worker URL
-        this.proxyUrl = 'https://money.alal225b.workers.dev/';
+        this.proxyUrl = 'https://yourname.workers.dev/';
         this.useProxy = true; // 默认使用代理
         this.username = '';
         this.appPassword = '';

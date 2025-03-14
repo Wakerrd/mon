@@ -18,6 +18,9 @@
                 <button id="import-btn" class="secondary-btn">
                     <i class="fas fa-upload"></i> 导入数据
                 </button>
+                <button id="nutstore-sync-btn" class="secondary-btn">
+                    <i class="fas fa-cloud-upload-alt"></i> 坚果云同步
+                </button>
                 <button id="add-goal-btn" class="primary-btn">
                     <i class="fas fa-plus"></i> 添加新目标
                 </button>
@@ -121,11 +124,58 @@
             </div>
         </div>
 
+        <!-- 坚果云同步配置模态窗口 -->
+        <div class="modal" id="nutstore-modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-nutstore-modal">&times;</span>
+                <h2>坚果云同步设置</h2>
+                <form id="nutstore-form">
+                    <div class="form-group">
+                        <label for="nutstore-username">坚果云账户邮箱</label>
+                        <input type="text" id="nutstore-username" placeholder="例如：your-email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nutstore-password">应用密码（非登录密码）</label>
+                        <input type="password" id="nutstore-password" placeholder="在坚果云网站生成的应用密码" required>
+                        <div class="help-text">
+                            <a href="https://help.jianguoyun.com/?p=2064" target="_blank">如何获取应用密码？</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="nutstore-path">同步目录（可选）</label>
+                        <input type="text" id="nutstore-path" placeholder="例如：我的文件夹">
+                        <div class="help-text">留空则保存在根目录</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="nutstore-filename">同步文件名（可选）</label>
+                        <input type="text" id="nutstore-filename" placeholder="例如：money-goals-data.json">
+                        <div class="help-text">默认为：money-goal-tracker-data.json</div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="primary-btn" id="test-connection-btn">测试连接</button>
+                        <button type="button" class="secondary-btn" id="cancel-nutstore-btn">取消</button>
+                        <button type="submit" class="primary-btn" id="save-nutstore-btn">保存配置</button>
+                    </div>
+                </form>
+                
+                <div id="connection-status" class="connection-status"></div>
+                
+                <div class="sync-actions" id="sync-actions" style="display: none; margin-top: 20px;">
+                    <h3>同步操作</h3>
+                    <div class="form-actions">
+                        <button class="primary-btn" id="upload-data-btn">上传数据到坚果云</button>
+                        <button class="primary-btn" id="download-data-btn">从坚果云下载数据</button>
+                        <button class="danger-btn" id="clear-config-btn">清除配置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Hidden file input for import -->
         <input type="file" id="import-file" accept=".json" style="display: none;">
     </div>
 
-
+    <script src="nutstore-sync.js"></script>
     <script src="money-goal-tracker.js"></script>
 </body>
 </html>

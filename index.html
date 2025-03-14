@@ -151,6 +151,24 @@
                         <input type="text" id="nutstore-filename" placeholder="例如：money-goals-data.json">
                         <div class="help-text">默认为：money-goal-tracker-data.json</div>
                     </div>
+                    <div class="form-group">
+                        <label>连接模式</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="connection-mode" id="direct-mode" value="direct">
+                                直接连接
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="connection-mode" id="proxy-mode" value="proxy" checked>
+                                使用代理（解决跨域问题）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="proxy-settings">
+                        <label for="proxy-url">代理服务URL</label>
+                        <input type="text" id="proxy-url" placeholder="例如：https://your-worker.workers.dev/proxy/" value="https://your-worker-name.your-subdomain.workers.dev/proxy/">
+                        <div class="help-text">Cloudflare Worker代理的URL</div>
+                    </div>
                     <div class="form-actions">
                         <button type="button" class="primary-btn" id="test-connection-btn">测试连接</button>
                         <button type="button" class="secondary-btn" id="cancel-nutstore-btn">取消</button>

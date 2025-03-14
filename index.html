@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赚钱目标追踪系统</title>
+    <link rel="stylesheet" href="money-goal-tracker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>赚钱目标追踪系统</h1>
+            <div class="header-actions">
+                <button id="export-btn" class="secondary-btn">
+                    <i class="fas fa-download"></i> 导出数据
+                </button>
+                <button id="import-btn" class="secondary-btn">
+                    <i class="fas fa-upload"></i> 导入数据
+                </button>
+                <button id="add-goal-btn" class="primary-btn">
+                    <i class="fas fa-plus"></i> 添加新目标
+                </button>
+            </div>
+        </header>
+        
+        <main>
+            <div class="dashboard">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>总目标</h3>
+                        <p id="total-goals">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>进行中</h3>
+                        <p id="in-progress">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>已完成</h3>
+                        <p id="completed">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>总进度</h3>
+                        <p id="overall-progress">0%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="goals-container" id="goals-container">
+                <!-- Goals will be added here dynamically -->
+                <div class="empty-state" id="empty-state">
+                    <i class="fas fa-tasks fa-3x"></i>
+                    <p>还没有设置目标，点击"添加新目标"开始吧！</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Unified modal for adding/editing goals and subgoals -->
+        <div class="modal" id="goal-modal">
+            <div class="modal-content">
+                <span class="close-btn" id="close-modal">&times;</span>
+                <h2 id="modal-title">添加新目标</h2>
+                <form id="goal-form">
+                    <input type="hidden" id="goal-id">
+                    <input type="hidden" id="parent-goal-id">
+                    <input type="hidden" id="is-subgoal" value="false">
+                    <div class="form-group">
+                        <label for="goal-name">目标名称</label>
+                        <input type="text" id="goal-name" placeholder="例如：用AI赚钱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-amount">目标金额</label>
+                        <input type="number" id="goal-amount" placeholder="例如：5000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="current-amount">当前金额</label>
+                        <input type="number" id="current-amount" placeholder="例如：1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-deadline">截止日期（可选）</label>
+                        <input type="date" id="goal-deadline">
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-notes">备注（可选）</label>
+                        <textarea id="goal-notes" placeholder="添加备注信息..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn" id="save-goal-btn">保存</button>
+                        <button type="button" class="secondary-btn" id="cancel-btn">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Confirmation modal -->
+        <div class="modal" id="confirm-modal">
+            <div class="modal-content confirm-content">
+                <h2>确认删除</h2>
+                <p id="confirm-message">确定要删除这个目标吗？所有相关的子目标也将被删除。</p>
+                <div class="form-actions">
+                    <button class="danger-btn" id="confirm-yes">确定</button>
+                    <button class="secondary-btn" id="confirm-no">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Money input modal -->
+        <div class="modal" id="money-input-modal">
+            <div class="modal-content money-input-content">
+                <span class="close-btn" id="close-money-modal">&times;</span>
+                <h2 id="money-modal-title">添加存款</h2>
+                <input type="hidden" id="money-goal-id">
+                <input type="hidden" id="money-subgoal-id">
+                <div class="money-input-field">
+                    <input type="number" id="money-amount" placeholder="输入金额" required min="1">
+                </div>
+                <div class="money-input-actions">
+                    <button class="primary-btn" id="save-money-btn">确认</button>
+                    <button class="secondary-btn" id="cancel-money-btn">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for import -->
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+    </div>
+
+
+    <script src="money-goal-tracker.js"></script>
+</body>
+</html>

@@ -692,3 +692,23 @@ textarea {
 .help-text a:hover {
     text-decoration: underline;
 }
+
+/* 代理设置相关样式 */
+.radio-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.radio-label input[type="radio"] {
+    width: auto;
+    margin: 0;
+}

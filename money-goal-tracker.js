@@ -248,7 +248,8 @@ class GoalTracker {
     // 导出所有数据
     exportData() {
         return {
-            goals: this.goals
+            goals: this.goals,
+            exportedAt: new Date().toISOString()
         };
     }
 
@@ -266,6 +267,7 @@ class GoalTracker {
 class UIController {
     constructor(goalTracker) {
         this.goalTracker = goalTracker;
+        this.nutstoreSync = new NutstoreSync(); // 坚果云同步实例
         this.initElements();
         this.initEventListeners();
         this.renderGoals();
@@ -322,6 +324,24 @@ class UIController {
         this.exportBtn = document.getElementById('export-btn');
         this.importBtn = document.getElementById('import-btn');
         this.importFile = document.getElementById('import-file');
+        
+        // 坚果云同步相关元素
+        this.nutstoreSyncBtn = document.getElementById('nutstore-sync-btn');
+        this.nutstoreModal = document.getElementById('nutstore-modal');
+        this.closeNutstoreModal = document.getElementById('close-nutstore-modal');
+        this.nutstoreForm = document.getElementById('nutstore-form');
+        this.nutstoreUsername = document.getElementById('nutstore-username');
+        this.nutstorePassword = document.getElementById('nutstore-password');
+        this.nutstorePath = document.getElementById('nutstore-path');
+        this.nutstoreFilename = document.getElementById('nutstore-filename');
+        this.testConnectionBtn = document.getElementById('test-connection-btn');
+        this.saveNutstoreBtn = document.getElementById('save-nutstore-btn');
+        this.cancelNutstoreBtn = document.getElementById('cancel-nutstore-btn');
+        this.connectionStatus = document.getElementById('connection-status');
+        this.syncActions = document.getElementById('sync-actions');
+        this.uploadDataBtn = document.getElementById('upload-data-btn');
+        this.downloadDataBtn = document.getElementById('download-data-btn');
+        this.clearConfigBtn = document.getElementById('clear-config-btn');
     }
 
     // 初始化事件监听器
@@ -351,6 +371,23 @@ class UIController {
         this.exportBtn.addEventListener('click', () => this.handleExport());
         this.importBtn.addEventListener('click', () => this.importFile.click());
         this.importFile.addEventListener('change', (e) => this.handleImport(e));
+        
+        // 坚果云同步相关事件
+        this.nutstoreSyncBtn.addEventListener('click', () => this.showNutstoreModal());
+        this.closeNutstoreModal.addEventListener('click', () => this.hideNutstoreModal());
+        this.cancelNutstoreBtn.addEventListener('click', () => this.hideNutstoreModal());
+        this.testConnectionBtn.addEventListener('click', () => this.testNutstoreConnection());
+        this.nutstoreForm.addEventListener('submit', (e) => this.handleNutstoreFormSubmit(e));
+        this.uploadDataBtn.addEventListener('click', () => this.uploadToNutstore());
+        this.downloadDataBtn.addEventListener('click', () => this.downloadFromNutstore());
+        this.clearConfigBtn.addEventListener('click', () => this.clearNutstoreConfig());
+        
+        // 点击模态窗口外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === this.nutstoreModal) {
+                this.hideNutstoreModal();
+            }
+        });
     }
 
     // 渲染所有目标
@@ -854,6 +891,155 @@ class UIController {
         this.hideMoneyModal();
         this.renderGoals();
         this.updateDashboard();
+    }
+
+    // 显示坚果云同步设置模态窗口
+    showNutstoreModal() {
+        this.nutstoreModal.style.display = 'block';
+        
+        // 如果已配置，填充表单并显示同步操作区域
+        if (this.nutstoreSync.isConfigured) {
+            this.nutstoreUsername.value = this.nutstoreSync.username;
+            this.nutstorePassword.value = this.nutstoreSync.appPassword;
+            this.nutstorePath.value = this.nutstoreSync.path;
+            this.nutstoreFilename.value = this.nutstoreSync.syncFilename;
+            this.syncActions.style.display = 'block';
+        } else {
+            this.syncActions.style.display = 'none';
+        }
+        
+        // 清除之前的连接测试状态
+        this.connectionStatus.className = 'connection-status';
+        this.connectionStatus.textContent = '';
+        this.connectionStatus.style.display = 'none';
+    }
+
+    // 隐藏坚果云同步设置模态窗口
+    hideNutstoreModal() {
+        this.nutstoreModal.style.display = 'none';
+    }
+
+    // 测试坚果云连接
+    async testNutstoreConnection() {
+        // 获取表单数据
+        const username = this.nutstoreUsername.value.trim();
+        const password = this.nutstorePassword.value.trim();
+        const path = this.nutstorePath.value.trim();
+        const filename = this.nutstoreFilename.value.trim() || 'money-goal-tracker-data.json';
+        
+        if (!username || !password) {
+            this.showConnectionStatus('error', '请填写坚果云账户邮箱和应用密码');
+            return;
+        }
+        
+        // 临时配置用于测试
+        this.nutstoreSync.saveConfig(username, password, path, filename);
+        
+        this.showConnectionStatus('loading', '正在测试连接...');
+        
+        try {
+            await this.nutstoreSync.testConnection();
+            this.showConnectionStatus('success', '连接成功！您可以保存配置并开始同步数据');
+            this.syncActions.style.display = 'block';
+        } catch (error) {
+            this.showConnectionStatus('error', `连接失败：${error.message}`);
+            this.syncActions.style.display = 'none';
+        }
+    }
+
+    // 显示连接状态
+    showConnectionStatus(type, message) {
+        this.connectionStatus.className = 'connection-status';
+        this.connectionStatus.classList.add(type);
+        this.connectionStatus.textContent = message;
+        this.connectionStatus.style.display = 'block';
+    }
+
+    // 处理坚果云配置表单提交
+    async handleNutstoreFormSubmit(e) {
+        e.preventDefault();
+        
+        // 获取表单数据
+        const username = this.nutstoreUsername.value.trim();
+        const password = this.nutstorePassword.value.trim();
+        const path = this.nutstorePath.value.trim();
+        const filename = this.nutstoreFilename.value.trim() || 'money-goal-tracker-data.json';
+        
+        if (!username || !password) {
+            this.showConnectionStatus('error', '请填写坚果云账户邮箱和应用密码');
+            return;
+        }
+        
+        this.showConnectionStatus('loading', '正在保存配置...');
+        
+        // 保存配置
+        this.nutstoreSync.saveConfig(username, password, path, filename);
+        
+        try {
+            await this.nutstoreSync.testConnection();
+            this.showConnectionStatus('success', '配置保存成功！');
+            this.syncActions.style.display = 'block';
+        } catch (error) {
+            this.showConnectionStatus('error', `配置保存成功，但连接测试失败：${error.message}`);
+        }
+    }
+
+    // 上传数据到坚果云
+    async uploadToNutstore() {
+        if (!this.nutstoreSync.isConfigured) {
+            this.showConnectionStatus('error', '请先配置坚果云账户');
+            return;
+        }
+        
+        this.showConnectionStatus('loading', '正在上传数据...');
+        
+        try {
+            const data = this.goalTracker.exportData();
+            await this.nutstoreSync.uploadData(data);
+            this.showConnectionStatus('success', '数据上传成功！');
+        } catch (error) {
+            this.showConnectionStatus('error', `上传失败：${error.message}`);
+        }
+    }
+
+    // 从坚果云下载数据
+    async downloadFromNutstore() {
+        if (!this.nutstoreSync.isConfigured) {
+            this.showConnectionStatus('error', '请先配置坚果云账户');
+            return;
+        }
+        
+        this.showConnectionStatus('loading', '正在下载数据...');
+        
+        try {
+            const data = await this.nutstoreSync.downloadData();
+            if (data) {
+                if (this.goalTracker.importData(data)) {
+                    this.renderGoals();
+                    this.updateDashboard();
+                    this.showConnectionStatus('success', '数据下载并导入成功！');
+                } else {
+                    this.showConnectionStatus('error', '数据格式不正确，导入失败');
+                }
+            } else {
+                this.showConnectionStatus('error', '未找到同步文件，请先上传数据');
+            }
+        } catch (error) {
+            this.showConnectionStatus('error', `下载失败：${error.message}`);
+        }
+    }
+
+    // 清除坚果云配置
+    clearNutstoreConfig() {
+        if (confirm('确定要清除坚果云同步配置吗？这不会删除已同步的文件。')) {
+            this.nutstoreSync.clearConfig();
+            this.nutstoreUsername.value = '';
+            this.nutstorePassword.value = '';
+            this.nutstorePath.value = '';
+            this.nutstoreFilename.value = '';
+            this.syncActions.style.display = 'none';
+            this.showConnectionStatus('success', '坚果云配置已清除');
+        }
     }
 
     // 处理导出
